@@ -23,7 +23,15 @@ fi
 : ${OBJ=../obj.${ARCH}}
 : ${CROSS_TOOLS=${OBJ}/"tooldir.`uname -s`-`uname -r`-`uname -m`"/bin}
 : ${CROSS_PREFIX=${CROSS_TOOLS}/arm-elf32-minix-}
+
+#
+# EDIT THE FOLLOWING
+#
 : ${JOBS=1}
+#
+# END EDIT
+#
+
 : ${DESTDIR=${OBJ}/destdir.$ARCH}
 : ${RELEASETOOLSDIR=./releasetools/}
 : ${FSTAB=${DESTDIR}/etc/fstab}
@@ -31,6 +39,29 @@ fi
 : ${BUILDSH=build.sh}
 : ${CREATE_IMAGE_ONLY=0}
 : ${RC=minix_x86.rc}
+
+
+# -----------------------
+#  EDITING SECTION BEGIN
+# -----------------------
+
+#
+# Custom username and system identifier
+
+# Username MUST NOT contain any spaces or special characters, only letters
+# numbers (e.g. CUSTOM_USERNAME=joeshmoe).
+#
+# System identifier is used for discovering the board when it is headless and 
+# on the network. Any characters may be used (including spaces), though it must
+# be quoted (e.g. CUSTOM_IDENTIFIER="My board").
+#
+export CUSTOM_USERNAME=
+export CUSTOM_IDENTIFIER=""
+
+# ----------------------
+#  EDITING SECTION END
+# ----------------------
+
 
 # Where the kernel & boot modules will be
 MODDIR=${DESTDIR}/boot/minix/.temp
@@ -43,12 +74,12 @@ MODDIR=${DESTDIR}/boot/minix/.temp
 : ${UBOOT=u-boot.img}
 
 # Beagleboard-xm
-: ${U_BOOT_BIN_DIR=build/omap3_beagle/}
-: ${CONSOLE=tty02}
+# : ${U_BOOT_BIN_DIR=build/omap3_beagle/}
+# : ${CONSOLE=tty02}
 
 # BeagleBone (and black)
-#: ${U_BOOT_BIN_DIR=build/am335x_evm/}
-#: ${CONSOLE=tty00}
+: ${U_BOOT_BIN_DIR=build/am335x_evm/}
+: ${CONSOLE=tty00}
 
 #
 # We host u-boot binaries.
@@ -145,6 +176,9 @@ fi
 
 mkdir -p ${IMG_DIR}
 
+# Clean up from previous build
+rm -f ${DESTDIR}/etc/rc.daemons ${DESTDIR}/etc/inet.conf ${DESTDIR}/etc/ftpusers 
+
 #
 # Download the stage 1 bootloader  and u-boot
 #
@@ -163,7 +197,7 @@ then
 	#
 	# Now start the build.
 	#
-	sh ${BUILDSH} -j ${JOBS} -m ${ARCH} -O ${OBJ} -D ${DESTDIR} ${BUILDVARS} -U -u distribution
+  sh ${BUILDSH} -j ${JOBS} -m ${ARCH} -O ${OBJ} -D ${DESTDIR} ${BUILDVARS} -U -u distribution
 
 fi
 
@@ -179,7 +213,29 @@ END_FSTAB
 
 rm -f ${DESTDIR}/SETS.*
 
+#
+# add the custom user
+#
+echo "$CUSTOM_USERNAME::1000:100::0:0::/home/$CUSTOM_USERNAME:/bin/sh"  >> ${DESTDIR}/etc/master.passwd
+perl -i -pe "s/(ftp.*)/\1$CUSTOM_USERNAME/" ${DESTDIR}/etc/group
+
 ${CROSS_TOOLS}/nbpwd_mkdb -V 0 -p -d ${DESTDIR} ${DESTDIR}/etc/master.passwd
+
+#
+# Set up the daemons
+#
+cp ${DESTDIR}/etc/rc.daemons.dist ${DESTDIR}/etc/rc.daemons
+echo "daemonize announce" >> ${DESTDIR}/etc/rc.daemons
+
+#
+# Configure Ethernet
+#
+echo "eth0 lan8710a 0 { default; } ;" > ${DESTDIR}/etc/inet.conf
+
+#
+# Configure ftp server
+#
+echo "$CUSTOM_USERNAME allow real" > ${DESTDIR}/etc/ftpusers
 
 #
 # make the different file system. this part is *also* hacky. We first convert
@@ -202,8 +258,11 @@ if [ -f ${RC} ]; then
     echo "./usr/etc/rc.local type=file uid=0 gid=0 mode=0644" >> ${IMG_DIR}/input
 fi
 
-# add fstab
+# add fstab and other entries
 echo "./etc/fstab type=file uid=0 gid=0 mode=0755 size=747 time=1365060731.000000000" >> ${IMG_DIR}/input
+echo "./etc/rc.daemons type=file uid=0 gid=0 mode=0755 size=0 time=0.000000000" >> ${IMG_DIR}/input
+echo "./etc/ftpusers type=file uid=0 gid=0 mode=0755 size=0 time=0.000000000" >> ${IMG_DIR}/input
+# echo "./home/$CUSTOM_USERNAME type=dir uid=1000 gid=100 mode=0755" >> ${IMG_DIR}/input
 
 # fill root.img (skipping /usr entries while keeping the /usr directory)
 cat ${IMG_DIR}/input  | grep -v "^./usr/" | ${CROSS_TOOLS}/nbtoproto -b ${DESTDIR} -o ${IMG_DIR}/root.proto
@@ -276,7 +335,6 @@ cp ${IMG_DIR}/uEnv.txt ${OBJ}/
 # correctly in qemu / HW.
 #
 dd if=/dev/zero of=${IMG} bs=512 count=1 seek=$(($IMG_SIZE -1))
-
 
 #
 # Generate /root, /usr and /home partition images.

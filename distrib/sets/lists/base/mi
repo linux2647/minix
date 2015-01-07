@@ -396,6 +396,7 @@
 ./usr/bin					base-sys-usr
 ./usr/bin/Mail					base-mail-bin
 ./usr/bin/agrep					base-util-bin
+./usr/bin/announce					base-util-bin
 ./usr/bin/apply					base-util-bin
 ./usr/bin/apropos				base-man-bin
 ./usr/bin/arpaname				base-bind-bin
@@ -506,6 +507,7 @@
 ./usr/bin/gzexe					base-util-bin
 ./usr/bin/gzip					base-util-bin
 ./usr/bin/head					base-util-bin
+./usr/bin/hello					base-util-bin
 ./usr/bin/hesinfo				base-hesiod-bin		hesiod
 ./usr/bin/hexdump				base-util-bin
 ./usr/bin/host					base-netutil-bin
