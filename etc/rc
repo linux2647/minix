@@ -142,9 +142,9 @@ autoboot|start)
 		# Add missing user folder
 				usrfldr=$(tail -n 1 /etc/passwd | cut -d: -f1)
 				if [ ! -d $usrfldr ];
-				then	cp -R /usr/ast /home/$usrfldr
+				then	cp -R /usr/ast/* /home/$usrfldr
 						chown -R $usrfldr:users /home/$usrfldr
-				fi	  
+				fi
 				unset usrfldr
 
     fi
