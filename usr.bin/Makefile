@@ -3,7 +3,7 @@
 
 .include <bsd.own.mk>
 
-SUBDIR= asa \
+SUBDIR= announce asa \
 	banner basename \
 	bzip2 bzip2recover cal calendar \
 	checknr chpass cksum col colcrt colrm \
@@ -12,7 +12,7 @@ SUBDIR= asa \
 	env expand \
 	false finger fold fpr from \
 	fsplit ftp genassym getopt \
-	head hexdump id indent infocmp join jot \
+	head hexdump hello id indent infocmp join jot \
 	lam last ldd leave \
 	lock login logname lorder m4 \
 	machine make man menuc mesg \
