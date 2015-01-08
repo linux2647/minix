@@ -143,6 +143,10 @@ autoboot|start)
 		# Add user
 		if [ $(grep %%USERNAME%% /etc/passwd | wc -l) = 0 ];
 		then	useradd -m %%USERNAME%%
+        		# remove the password
+                sed -e "s/%%USERNAME%%:[*]*:/%%USERNAME%%::/" /etc/master.passwd > /etc/master.passwd.tmp
+                mv /etc/master.passwd.tmp /etc/master.passwd
+                pwd_mkdb /etc/master.passwd
 		fi
 
     fi

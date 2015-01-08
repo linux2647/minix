@@ -216,7 +216,8 @@ rm -f ${DESTDIR}/SETS.*
 #
 # add the custom user
 #
-sed -e "s/%%USERNAME%%/$CUSTOM_USERNAME/" ${DESTDIR}/etc/rc > ${DESTDIR}/etc/rc
+sed -e "s/%%USERNAME%%/$CUSTOM_USERNAME/" ${DESTDIR}/etc/rc > ${DESTDIR}/etc/rc.tmp
+mv ${DESTDIR}/etc/rc.tmp ${DESTDIR}/etc/rc
 
 ${CROSS_TOOLS}/nbpwd_mkdb -V 0 -p -d ${DESTDIR} ${DESTDIR}/etc/master.passwd
 
