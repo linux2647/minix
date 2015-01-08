@@ -216,8 +216,7 @@ rm -f ${DESTDIR}/SETS.*
 #
 # add the custom user
 #
-echo "$CUSTOM_USERNAME::1000:100::0:0::/home/$CUSTOM_USERNAME:/bin/sh"  >> ${DESTDIR}/etc/master.passwd
-perl -i -pe "s/(ftp.*)/\1$CUSTOM_USERNAME/" ${DESTDIR}/etc/group
+sed -e "s/%%USERNAME%%/$CUSTOM_USERNAME/" ${DESTDIR}/etc/rc > ${DESTDIR}/etc/rc
 
 ${CROSS_TOOLS}/nbpwd_mkdb -V 0 -p -d ${DESTDIR} ${DESTDIR}/etc/master.passwd
 
